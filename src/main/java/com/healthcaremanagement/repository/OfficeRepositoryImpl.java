@@ -1,5 +1,6 @@
 package com.healthcaremanagement.repository;
 
+import com.healthcaremanagement.model.Doctor;
 import com.healthcaremanagement.model.Office;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -19,6 +20,14 @@ public class OfficeRepositoryImpl {
     public void createOffice(Office office) {
         try(Session session = sessionFactory.openSession()) {
             Transaction tx = session.beginTransaction();
+            // Ensure the doctor is managed
+            Doctor managedDoctor = session.get(Doctor.class, office.getDoctor().getDoctorId());
+            if (managedDoctor == null) {
+                throw new IllegalArgumentException("Doctor with ID " + office.getDoctor().getDoctorId() + " does not exist.");
+            }
+
+            office.setDoctor(managedDoctor); // Use the managed entity
+
             session.save(office);
             tx.commit();
         }
@@ -33,7 +42,13 @@ public class OfficeRepositoryImpl {
     public void updateOffice(Office office){
          try(Session session =  sessionFactory.openSession()){
              Transaction tx = session.beginTransaction();
-             session.update(office);
+
+             // Ensure the new doctor is managed (if changed)
+             if (office.getDoctor() != null) {
+                 Doctor managedDoctor = session.get(Doctor.class, office.getDoctor().getDoctorId());
+                 office.setDoctor(managedDoctor);
+             }
+             session.merge(office);
              tx.commit();
          }
     }
@@ -43,8 +58,13 @@ public class OfficeRepositoryImpl {
             Transaction tx = session.beginTransaction();
             Office office = session.get(Office.class, officeId);
             if (office != null) {
-                session.delete(office);
+                if (office.getDoctor() != null) {
+                    office.getDoctor().setOffice(null); // Break the association
+                    session.merge(office.getDoctor()); // Persist the change in the database
+                }
+
             }
+            session.remove(office);
             tx.commit();
 
         }

@@ -1,19 +1,23 @@
 package com.healthcaremanagement.model;
 import jakarta.persistence.*;
-import lombok.Data;
+
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Objects;
-import java.util.HashSet;
-@Data
-@ToString(exclude = "doctors")
-@Getter
-@Setter
+
+
 @Entity
 @Table(name = "Patients")
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString(exclude = "doctors")
+
 public class Patient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

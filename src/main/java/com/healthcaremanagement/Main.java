@@ -56,7 +56,7 @@ public class Main {
                      manageAppointments(appointmentService, patientService, doctorService, scanner);
                      break;
                  case 4:
-                     manageOffices(officeService, scanner);
+                     manageOffices(officeService, doctorService, scanner);
                      break;
                  case 5:
                      System.exit(0);
@@ -89,6 +89,7 @@ public class Main {
         try {
             switch (choice) {
                 case 1:
+                    //CREATE PATIENT
                     // Application calls the service layer, not the repository directly
                     Patient newPatient = new Patient();
                     System.out.print("Enter first name: ");
@@ -105,6 +106,7 @@ public class Main {
                     System.out.println("Patient created successfully.");
                     break;
                 case 2:
+                    //GET PATIENT BY ID
                     // Application calls the service layer, not the repository directly
                     System.out.print("Enter Patient ID: ");
                     int patientId = scanner.nextInt();
@@ -122,6 +124,7 @@ public class Main {
                     }
                     break;
                 case 3:
+                    //UPDATE PATIENT
                     // Application calls the service layer, not the repository directly
                     System.out.print("Enter Patient ID: ");
                     patientId = scanner.nextInt();
@@ -145,6 +148,7 @@ public class Main {
                     }
                     break;
                 case 4:
+                    //DELETE PATIENT
                     // Application calls the service layer, not the repository directly
                     System.out.print("Enter Patient ID: ");
                     patientId = scanner.nextInt();
@@ -173,6 +177,7 @@ public class Main {
         try {
             switch (choice) {
                 case 1:
+                    //CREATE DOCTOR
                     // Application calls the service layer, not the repository directly
                     Doctor newDoctor = new Doctor();
                     System.out.print("Enter first name: ");
@@ -187,8 +192,9 @@ public class Main {
                     System.out.println("Doctor created successfully.");
                     break;
                 case 2:
+                    //READ DOCTOR
                     // Application calls the service layer, not the repository directly
-                    System.out.print("Enter Doctor ID: ");
+                      System.out.print("Enter Doctor ID: ");
                     int doctorId = scanner.nextInt();
                     Doctor doctor = doctorService.getDoctorById(doctorId);  // Use service here
                     if (doctor != null) {
@@ -204,8 +210,9 @@ public class Main {
                     }
                     break;
                 case 3:
+                    //UPDATE DOCTOR
                     // Application calls the service layer, not the repository directly
-                    System.out.print("Enter Patient ID: ");
+                    System.out.print("Enter Doctor ID: ");
                     doctorId = scanner.nextInt();
                     scanner.nextLine();  // consume newline
                     doctor = doctorService.getDoctorById(doctorId);  // Use service here
@@ -226,6 +233,7 @@ public class Main {
                     }
                     break;
                 case 4:
+                    //DELETE DOCTOR
                     // Application calls the service layer, not the repository directly
                     System.out.print("Enter Doctor ID: ");
                     doctorId = scanner.nextInt();
@@ -254,28 +262,44 @@ public class Main {
 
         switch (choice) {
             case 1:
-                Appointment newAppointment = new Appointment();
+                //CREATE APPOINTMENT
                 System.out.print("Enter patient ID: ");
-                Patient patient = new Patient();
-                patient.setPatientId(scanner.nextInt());
-                newAppointment.setPatient(patient);
+                int patientId = scanner.nextInt();
+                scanner.nextLine();
+                Patient patient = patientService.getPatientById(patientId);
+
                 System.out.print("Enter doctor ID: ");
-                Doctor doctor = new Doctor();
-                doctor.setDoctorId(scanner.nextInt());
+                int doctorId = scanner.nextInt();
+                scanner.nextLine();
+                Doctor doctor = doctorService.getDoctorById(doctorId);
+
+                if (patient == null || doctor == null) {
+                    System.out.println("Patient or Doctor not found.");
+                    break;
+                }
+
+                // Establish relationship using service methods
+                doctorService.addPatientToDoctor(doctorId, patient);
+                patientService.addDoctorToPatient(patientId, doctor);
+
+                Appointment newAppointment = new Appointment();
+                newAppointment.setPatient(patient);
                 newAppointment.setDoctor(doctor);
-                scanner.nextLine();  // consume newline
+
                 System.out.print("Enter appointment date (YYYY-MM-DD): ");
                 newAppointment.setAppointmentDate(scanner.nextLine());
                 System.out.print("Enter notes: ");
                 newAppointment.setNotes(scanner.nextLine());
-                doctorService.addPatientToDoctor(doctor.getDoctorId(), patient);
-                patientService.addDoctorToPatient(patient.getPatientId(), doctor);
-                System.out.println("Appointment created successfully.");
+
                 appointmentService.createAppointment(newAppointment);
+                System.out.println("Appointment created successfully.");
                 break;
+
             case 2:
+                //GET APPOINTMENT BY ID
                 System.out.print("Enter Appointment ID: ");
                 int appointmentId = scanner.nextInt();
+                scanner.nextLine();
                 Appointment appointment = appointmentService.getAppointmentById(appointmentId);
                 if (appointment != null) {
                     System.out.println("Appointment ID: " + appointment.getAppointmentId());
@@ -289,35 +313,60 @@ public class Main {
                     System.out.println("Appointment not found.");
                 }
                 break;
+
             case 3:
+                //UPDATE APPOINTMENT
+
                 System.out.print("Enter Appointment ID: ");
                 appointmentId = scanner.nextInt();
-                scanner.nextLine();  // consume newline
+                scanner.nextLine();
                 appointment = appointmentService.getAppointmentById(appointmentId);
                 if (appointment != null) {
+                    // Store original relationships
+                    Doctor originalDoctor = appointment.getDoctor();
+                    Patient originalPatient = appointment.getPatient();
+
                     System.out.print("Enter new patient ID: ");
-                    patient = new Patient();
-                    patient.setPatientId(scanner.nextInt());
-                    appointment.setPatient(patient);
+                    patientId = scanner.nextInt();
+                    scanner.nextLine();
+                    Patient updatedPatient = patientService.getPatientById(patientId);
+
                     System.out.print("Enter new doctor ID: ");
-                    doctor = new Doctor();
-                    doctor.setDoctorId(scanner.nextInt());
-                    appointment.setDoctor(doctor);
-                    scanner.nextLine();  // consume newline
+                    doctorId = scanner.nextInt();
+                    scanner.nextLine();
+                    Doctor updatedDoctor = doctorService.getDoctorById(doctorId);
+
+                    if (updatedPatient == null || updatedDoctor == null) {
+                        System.out.println("Patient or Doctor not found.");
+                        break;
+                    }
+
+                    // Update relationships
+                    doctorService.addPatientToDoctor(doctorId, updatedPatient);
+                    patientService.addDoctorToPatient(patientId, updatedDoctor);
+
+                    // Remove old relationships if no other appointments exist
+                    if (!appointmentService.hasOtherAppointmentsBetween(
+                            originalDoctor.getDoctorId(),
+                            originalPatient.getPatientId()
+                    )) {
+                        doctorService.removePatientFromDoctor(
+                                originalDoctor.getDoctorId(),
+                                originalPatient
+                        );
+                        patientService.removeDoctorFromPatient(
+                                originalPatient.getPatientId(),
+                                originalDoctor
+                        );
+                    }
+
+                    // Update appointment details
+                    appointment.setPatient(updatedPatient);
+                    appointment.setDoctor(updatedDoctor);
                     System.out.print("Enter new appointment date (YYYY-MM-DD): ");
                     appointment.setAppointmentDate(scanner.nextLine());
                     System.out.print("Enter new notes: ");
                     appointment.setNotes(scanner.nextLine());
-
-
-                    Doctor originalDoctor = appointment.getDoctor();
-                    Patient originalPatient = appointment.getPatient();
-
-                    if (!appointmentService.hasOtherAppointmentsBetween(
-                            originalDoctor.getDoctorId(), originalPatient.getPatientId())) {
-                        doctorService.removePatientFromDoctor(originalDoctor.getDoctorId(), originalPatient);
-                        patientService.removeDoctorFromPatient(originalPatient.getPatientId(), originalDoctor);
-                    }
 
                     appointmentService.updateAppointment(appointment);
                     System.out.println("Appointment updated successfully.");
@@ -325,30 +374,40 @@ public class Main {
                     System.out.println("Appointment not found.");
                 }
                 break;
+
             case 4:
                 System.out.print("Enter Appointment ID: ");
                 appointmentId = scanner.nextInt();
+                scanner.nextLine();
                 appointment = appointmentService.getAppointmentById(appointmentId);
+                if (appointment != null) {
+                    Doctor doctorToCheck = appointment.getDoctor();
+                    Patient patientToCheck = appointment.getPatient();
 
-                if (appointment == null){
+                    // Delete the appointment first
+                    appointmentService.deleteAppointment(appointmentId);
+
+                    // Check if relationship should be removed
+                    if (!appointmentService.hasOtherAppointmentsBetween(doctorToCheck.getDoctorId(), patientToCheck.getPatientId())) {
+                        doctorService.removePatientFromDoctor(
+                                doctorToCheck.getDoctorId(),
+                                patientToCheck
+                        );
+                        patientService.removeDoctorFromPatient(patientToCheck.getPatientId(), doctorToCheck);
+                    }
+                    System.out.println("Appointment deleted successfully.");
+                } else {
                     System.out.println("Appointment not found.");
                 }
-                Doctor doctorToCheck = appointment.getDoctor();
-                Patient patientToCheck = appointment.getPatient();
-                if (!appointmentService.hasOtherAppointmentsBetween(
-                        doctorToCheck.getDoctorId(), patientToCheck.getPatientId())) {
-                    doctorService.removePatientFromDoctor(doctorToCheck.getDoctorId(), patientToCheck);
-                    patientService.removeDoctorFromPatient(patientToCheck.getPatientId(), doctorToCheck);
-                }
-                appointmentService.deleteAppointment(appointmentId);
-                System.out.println("Appointment deleted successfully.");
                 break;
+
             case 5:
                 System.out.println("Listing All Appointments:");
                 for (Appointment a : appointmentService.getAllAppointments()) {
                     System.out.println(a);
                 }
                 break;
+
             default:
                 System.out.println("Invalid choice.");
         }
@@ -356,7 +415,7 @@ public class Main {
 
     //OFFICE CONTROLLER
 
-    public static void manageOffices(OfficeService officeService, Scanner scanner) {
+    public static void manageOffices(OfficeService officeService,DoctorService doctorService, Scanner scanner) {
 
 
         System.out.println("1. Create Office");
@@ -392,6 +451,7 @@ public class Main {
                     int officeId = scanner.nextInt();
                     Office office = officeService.getOfficeById(officeId);  // Use service here
                     if (office != null) {
+                        System.out.println("Office Id: " + office.getOfficeId());
                         System.out.println("Office Location " + office.getLocation());
                         System.out.println("Office Phone No: " + office.getPhone());
                         System.out.println("Doctor : " + office.getDoctor());
@@ -405,22 +465,32 @@ public class Main {
                     officeId = scanner.nextInt();
                     scanner.nextLine();  // consume newline
                     office = officeService.getOfficeById(officeId);  // Use service here
+
                     if (office != null) {
-                        System.out.print("Enter Office Location: ");
+                        System.out.print("Enter new location: ");
                         office.setLocation(scanner.nextLine());
-                        System.out.print("Enter Office Phone Number: ");
+                        System.out.print("Enter new phone number: ");
                         office.setPhone(scanner.nextLine());
 
-                        System.out.print("Enter Doctor ID: ");
-                        Doctor doctor1 = new Doctor();
-                        doctor1.setDoctorId(scanner.nextInt());
-                        office.setDoctor(doctor1);
+                        System.out.print("Enter new Doctor ID(or 0 to keep current): ");
+                        int newDoctorId = scanner.nextInt();
+                        scanner.nextLine();  // consume newline
+
+                        if (newDoctorId != 0) {
+                            Doctor newDoctor = doctorService.getDoctorById(newDoctorId);
+                            if (newDoctor != null) {
+                                office.setDoctor(newDoctor);
+                            } else {
+                                System.out.println("Doctor not found. Keeping the existing doctor.");
+                            }
+                        }
                         officeService.updateOffice(office);
                         System.out.println("Office updated successfully.");
-                    } else {
+                        } else {
                         System.out.println("Office not found.");
-                    }
-                    break;
+                        }
+
+                        break;
                 case 4:
                     // Application calls the service layer, not the repository directly
                     System.out.print("Enter Office ID: ");

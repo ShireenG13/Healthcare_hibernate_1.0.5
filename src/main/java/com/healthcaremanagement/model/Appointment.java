@@ -1,19 +1,21 @@
 package com.healthcaremanagement.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+
 import java.util.Objects;
 
 @Entity
-@Data
+@Table(name = "Appointments")
 @Getter
 @Setter
+@NoArgsConstructor
 @ToString(exclude = {"patient", "doctor"})
-@Table(name ="Appointments")
+
 public class Appointment {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)

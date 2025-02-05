@@ -19,7 +19,7 @@ public class AppointmentRepositoryImpl {
     public void createAppointment(Appointment appointment) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            session.save(appointment);
+            session.persist(appointment);
             transaction.commit();
         }
     }
@@ -33,7 +33,7 @@ public class AppointmentRepositoryImpl {
     public void updateAppointment(Appointment appointment) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            session.update(appointment);
+            session.merge(appointment);
             transaction.commit();
         }
     }
@@ -43,7 +43,7 @@ public class AppointmentRepositoryImpl {
             Transaction transaction = session.beginTransaction();
             Appointment appointment = session.get(Appointment.class, appointmentId);
             if (appointment != null) {
-                session.delete(appointment);
+                session.remove(appointment);
             }
             transaction.commit();
         }
@@ -55,17 +55,6 @@ public class AppointmentRepositoryImpl {
         }
     }
 
-    public Patient getPatient(int patientId) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.get(Patient.class, patientId);
-        }
-    }
-
-    public Doctor getDoctor(int doctorId) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.get(Doctor.class, doctorId);
-        }
-    }
 
     public boolean hasOtherAppointmentsBetween(int doctorId, int patientId) {
         try (Session session = sessionFactory.openSession()) {

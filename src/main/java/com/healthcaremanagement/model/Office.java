@@ -1,19 +1,21 @@
 package com.healthcaremanagement.model;
 import jakarta.persistence.*;
-import lombok.Data;
+
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.Objects;
 
 
 @Entity
-@Data
+@Table(name ="Offices")
 @Getter
 @Setter
-@ToString(exclude = "doctors")
-@Table(name ="Offices")
+@NoArgsConstructor
+@ToString(exclude = "doctor")
+
 public class Office {
 
     @Id
@@ -27,8 +29,8 @@ public class Office {
     @Column
     private String phone;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "DoctorID")
+    @OneToOne
+    @JoinColumn(name = "DoctorID", nullable = true)
     private Doctor doctor;
 
     @Override

@@ -19,7 +19,7 @@ public class PatientRepositoryImpl{
     public void createPatient(Patient patient) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            session.save(patient);
+            session.persist(patient);
             transaction.commit();
         }
     }
@@ -33,7 +33,7 @@ public class PatientRepositoryImpl{
     public void updatePatient(Patient patient) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            session.update(patient);
+            session.merge(patient);
             transaction.commit();
         }
     }
